@@ -22,14 +22,10 @@ class UserService {
   }
 
   public async createUser(userData: CreateUserDto): Promise<User> {
-    if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
+    let newUser: User = await this.users.findOne({ email: userData.email });
+    if (!newUser) newUser = await this.users.create({ ...userData });
 
-    const findUser: User = await this.users.findOne({ email: userData.email });
-    if (findUser) throw new HttpException(409, `You're email ${userData.email} already exists`);
-
-    const createUserData: User = await this.users.create({ ...userData });
-
-    return createUserData;
+    return newUser;
   }
 }
 

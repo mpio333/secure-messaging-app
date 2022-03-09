@@ -1,18 +1,24 @@
 import { NextFunction, Request, Response } from 'express';
 import { CreateUserDto } from '@dtos/users.dto';
-import { RequestWithUser } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
+import { UI_URL } from '@/config';
 import AuthService from '@services/auth.service';
+import UserService from '@/services/users.service';
+import MailService from '@/services/mail.service';
 
 class AuthController {
   public authService = new AuthService();
+  public userService = new UserService();
+  public mailService = new MailService();
 
-  public signUp = async (req: Request, res: Response, next: NextFunction) => {
+  public getLink = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const userData: CreateUserDto = req.body;
-      const signUpUserData: User = await this.authService.signup(userData);
+      const user: User = await this.userService.createUser(userData);
+      const token = this.authService.createToken(user);
+      await this.mailService.send(user.email, 'Login Link', `${UI_URL}/login?token=${token}`);
 
-      res.status(201).json({ data: signUpUserData, message: 'signup' });
+      res.status(201).json({ data: user, message: 'signup' });
     } catch (error) {
       next(error);
     }
@@ -20,23 +26,12 @@ class AuthController {
 
   public logIn = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userData: CreateUserDto = req.body;
-      const { cookie, findUser } = await this.authService.login(userData);
+      const token = this.authService.decodeToken(req.query.token);
+      const user = await this.userService.findUserById(token._id);
+      const cookie = this.authService.createCookie(req.query.token, token.exp);
 
       res.setHeader('Set-Cookie', [cookie]);
-      res.status(200).json({ data: findUser, message: 'login' });
-    } catch (error) {
-      next(error);
-    }
-  };
-
-  public logOut = async (req: RequestWithUser, res: Response, next: NextFunction) => {
-    try {
-      const userData: User = req.user;
-      const logOutUserData: User = await this.authService.logout(userData);
-
-      res.setHeader('Set-Cookie', ['Authorization=; Max-age=0']);
-      res.status(200).json({ data: logOutUserData, message: 'logout' });
+      res.status(200).json({ data: user, message: 'login' });
     } catch (error) {
       next(error);
     }

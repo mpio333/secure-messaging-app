@@ -1,48 +1,22 @@
-import { sign } from 'jsonwebtoken';
+import { JwtPayload, sign, verify } from 'jsonwebtoken';
 import { SECRET_KEY } from '@config';
-import { CreateUserDto } from '@dtos/users.dto';
-import { HttpException } from '@exceptions/HttpException';
 import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
-import userModel from '@models/users.model';
-import { isEmpty } from '@utils/util';
 
 class AuthService {
-  public users = userModel;
-
-  public async signup(userData: CreateUserDto): Promise<User> {
-    if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
-
-    const findUser: User = await this.users.findOne({ email: userData.email });
-    if (findUser) throw new HttpException(409, `You're email ${userData.email} already exists`);
-
-    const createUserData: User = await this.users.create({ ...userData });
-
-    return createUserData;
-  }
-
-  public async login(userData: CreateUserDto): Promise<{ cookie: string; findUser: User }> {
-    if (isEmpty(userData)) throw new HttpException(400, "You're not userData");
-
-    const findUser: User = await this.users.findOne({ email: userData.email });
-    if (!findUser) throw new HttpException(409, `You're email ${userData.email} not found`);
-
-    const tokenData = this.createToken(findUser);
-    const cookie = this.createCookie(tokenData);
-
-    return { cookie, findUser };
-  }
-
-  public createToken(user: User): TokenData {
+  public createToken(user: User): string {
     const dataStoredInToken: DataStoredInToken = { _id: user._id };
-    const secretKey: string = SECRET_KEY;
-    const expiresIn: number = 60 * 60;
+    const expiresIn: number = 7 * 24 * 60 * 60;
 
-    return { expiresIn, token: sign(dataStoredInToken, secretKey, { expiresIn }) };
+    return sign(dataStoredInToken, SECRET_KEY, { expiresIn });
   }
 
-  public createCookie(tokenData: TokenData): string {
-    return `Authorization=${tokenData.token}; HttpOnly; Max-Age=${tokenData.expiresIn};`;
+  public decodeToken(token: string): string | JwtPayload {
+    return verify(token, SECRET_KEY);
+  }
+
+  public createCookie(token: string, expiresIn: number): string {
+    return `Authorization=${token}; HttpOnly; Max-Age=${expiresIn};`;
   }
 }
 

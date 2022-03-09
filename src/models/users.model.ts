@@ -7,6 +7,10 @@ const userSchema: Schema = new Schema({
     required: true,
     unique: true,
   },
+  roles: {
+    type: Array,
+    required: true,
+  },
 });
 
 const userModel = model<User & Document>('User', userSchema);
