@@ -26,6 +26,7 @@ class AuthController {
 
   public logIn = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      console.log(req);
       const token = this.authService.decodeToken(req.query.token);
       const user = await this.userService.findUserById(token._id);
       const cookie = this.authService.createCookie(req.query.token, token.exp);

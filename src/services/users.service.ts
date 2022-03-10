@@ -3,6 +3,7 @@ import { HttpException } from '@exceptions/HttpException';
 import { User } from '@interfaces/users.interface';
 import userModel from '@models/users.model';
 import { isEmpty } from '@utils/util';
+import { roles } from '@/utils/constants';
 
 const projection = { _id: 1, email: 1, roles: 1 };
 
@@ -29,6 +30,11 @@ class UserService {
     if (!newUser) newUser = await this.users.create({ email: userData.email, roles: roles }, projection);
 
     return newUser;
+  }
+
+  public async isAdmin(userId: string): Promise<boolean> {
+    const user: User = await this.findUserById(userId);
+    return user.roles.includes(roles.ADMIN);
   }
 }
 
