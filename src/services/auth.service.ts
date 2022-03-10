@@ -1,6 +1,6 @@
 import { JwtPayload, sign, verify } from 'jsonwebtoken';
 import { SECRET_KEY } from '@config';
-import { DataStoredInToken, TokenData } from '@interfaces/auth.interface';
+import { DataStoredInToken } from '@interfaces/auth.interface';
 import { User } from '@interfaces/users.interface';
 
 class AuthService {
