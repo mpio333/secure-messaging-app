@@ -26,13 +26,19 @@ class AuthController {
 
   public logIn = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log(req);
-      const token = this.authService.decodeToken(req.query.token);
-      const user = await this.userService.findUserById(token._id);
-      const cookie = this.authService.createCookie(req.query.token, token.exp);
+      const token = req.query.token as string;
+      const decodedToken = this.authService.decodeToken(token);
+      const user = await this.userService.findUserById(decodedToken._id);
+      res.status(200).cookie('token', token, { httpOnly: true }).json({ data: user, message: 'login' });
+    } catch (error) {
+      next(error);
+    }
+  };
 
-      res.setHeader('Set-Cookie', [cookie]);
-      res.status(200).json({ data: user, message: 'login' });
+  public session = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const user = await this.userService.findUserById(req.user as string);
+      res.status(200).json({ data: user, message: 'session' });
     } catch (error) {
       next(error);
     }

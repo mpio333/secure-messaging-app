@@ -27,7 +27,7 @@ class UserService {
   public async createUser(userData: CreateUserDto): Promise<User> {
     const roles = userData.roles || [];
     let newUser = await this.users.findOne({ email: userData.email }, projection);
-    if (!newUser) newUser = await this.users.create({ email: userData.email, roles: roles }, projection);
+    if (!newUser) newUser = await this.users.create({ email: userData.email, roles: roles });
 
     return newUser;
   }

@@ -6,11 +6,12 @@ import helmet from 'helmet';
 import hpp from 'hpp';
 import morgan from 'morgan';
 import { connect, set } from 'mongoose';
-import { NODE_ENV, PORT, LOG_FORMAT, ORIGIN, CREDENTIALS } from '@config';
+import { NODE_ENV, PORT, LOG_FORMAT, ORIGIN, CREDENTIALS, SECRET_KEY } from '@config';
 import { dbConnection } from '@databases';
 import { Routes } from '@interfaces/routes.interface';
 import errorMiddleware from '@middlewares/error.middleware';
 import { logger, stream } from '@utils/logger';
+import jwt from 'express-jwt';
 
 class App {
   public app: express.Application;
@@ -58,6 +59,19 @@ class App {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
     this.app.use(cookieParser());
+    this.app.use(
+      jwt({
+        secret: SECRET_KEY,
+        algorithms: ['HS256'],
+        getToken: req => req.cookies.token,
+      }).unless({ path: ['/get-link', '/login'] }),
+    );
+    this.app.use(function (req, res, next) {
+      res.header('Content-Type', 'application/json;charset=UTF-8');
+      res.header('Access-Control-Allow-Credentials', true);
+      res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+      next();
+    });
   }
 
   private initializeRoutes(routes: Routes[]) {
