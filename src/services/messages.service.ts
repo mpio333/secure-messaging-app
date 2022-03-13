@@ -2,11 +2,13 @@ import { HttpException } from '@exceptions/HttpException';
 import { Thread } from '@interfaces/threads.interface';
 import threadModel from '@models/threads.model';
 import { isEmpty } from '@utils/util';
+import userService from '@services/users.service';
 
 const projection = { _id: 1, admin: 1, user: 1, messages: 1 };
 
 class MessageService {
   public threads = threadModel;
+  public userService = new userService();
 
   public async findThreads(user: string, isAdmin: boolean): Promise<Thread[]> {
     let threads: Thread[] = [];
@@ -23,7 +25,7 @@ class MessageService {
   public async findThreadById(threadId: string): Promise<Thread> {
     if (isEmpty(threadId)) throw new HttpException(400, "You're not threadId");
 
-    const thread: Thread = await this.threads.findOne({ _id: threadId }, projection);
+    const thread: Thread = await this.threads.findById(threadId, projection);
     if (!thread) throw new HttpException(409, "You're not a thread");
 
     return thread;
@@ -31,7 +33,7 @@ class MessageService {
 
   public async createThread(admin: string, user: string): Promise<Thread> {
     let newThread = await this.threads.findOne({ admin, user }, projection);
-    if (!newThread) newThread = await this.threads.create({ admin, user }, projection);
+    if (!newThread) newThread = await this.threads.create({ admin, user });
 
     return newThread;
   }
@@ -46,6 +48,13 @@ class MessageService {
     );
 
     return newThread;
+  }
+
+  public async setEmail(thread: Thread, isAdmin: boolean): Promise<Thread> {
+    const user = await this.userService.findUserById(isAdmin ? thread.user : thread.admin);
+    isAdmin ? (thread.user = user.email) : (thread.admin = user.email);
+
+    return thread;
   }
 }
 
