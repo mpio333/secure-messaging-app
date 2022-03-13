@@ -16,15 +16,16 @@ describe('Testing Auth', () => {
     roles: ['admin'],
   };
 
+  const authRoute = new AuthRoute();
+  const users = authRoute.authController.userService;
+
+  users.findUserById = jest.fn().mockReturnValue(user);
+
+  (mongoose as any).connect = jest.fn();
+  const app = new App([authRoute]);
+
   describe('[GET] /login', () => {
     it('response should have the Set-Cookie header with the token', async () => {
-      const authRoute = new AuthRoute();
-      const users = authRoute.authController.userService;
-
-      users.findUserById = jest.fn().mockReturnValue(user);
-
-      (mongoose as any).connect = jest.fn();
-      const app = new App([authRoute]);
       const res = await request(app.getServer())
         .get(`${authRoute.path}login?token=${token}`)
         .send(userData)
@@ -35,13 +36,6 @@ describe('Testing Auth', () => {
 
   describe('[GET] /session', () => {
     it('should verify the token', async () => {
-      const authRoute = new AuthRoute();
-      const users = authRoute.authController.userService;
-
-      users.findUserById = jest.fn().mockReturnValue(user);
-
-      (mongoose as any).connect = jest.fn();
-      const app = new App([authRoute]);
       const res = await request(app.getServer())
         .get(`${authRoute.path}session`)
         .set('Cookie', [`token=${token}`])
@@ -52,13 +46,6 @@ describe('Testing Auth', () => {
 
   describe('[GET] /sign-out', () => {
     it('should unset the cookie', async () => {
-      const authRoute = new AuthRoute();
-      const users = authRoute.authController.userService;
-
-      users.findUserById = jest.fn().mockReturnValue(user);
-
-      (mongoose as any).connect = jest.fn();
-      const app = new App([authRoute]);
       const res = await request(app.getServer())
         .get(`${authRoute.path}sign-out`)
         .set('Cookie', [`token=${token}`])
