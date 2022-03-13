@@ -1,17 +1,18 @@
-import { NextFunction, Request, Response } from 'express';
+import { NextFunction, Response } from 'express';
 import { Thread } from '@interfaces/threads.interface';
 import userService from '@services/users.service';
 import messageService from '@services/messages.service';
 import mailService from '@services/mail.service';
 import { HttpException } from '@/exceptions/HttpException';
 import { UI_URL } from '@/config';
+import { ReqWithUser } from '@/interfaces/request.interface';
 
 class MessagesController {
   public userService = new userService();
   public messageService = new messageService();
   public mailService = new mailService();
 
-  public getThreads = async (req: Request, res: Response, next: NextFunction) => {
+  public getThreads = async (req: ReqWithUser, res: Response, next: NextFunction) => {
     try {
       const user = req.user;
       const isAdmin = await this.userService.isAdmin(user._id);
@@ -27,7 +28,7 @@ class MessagesController {
     }
   };
 
-  public getThread = async (req: Request, res: Response, next: NextFunction) => {
+  public getThread = async (req: ReqWithUser, res: Response, next: NextFunction) => {
     try {
       const user = req.user._id;
       const isAdmin = await this.userService.isAdmin(user);
@@ -45,7 +46,7 @@ class MessagesController {
     }
   };
 
-  public createThread = async (req: Request, res: Response, next: NextFunction) => {
+  public createThread = async (req: ReqWithUser, res: Response, next: NextFunction) => {
     try {
       const admin = req.user._id;
       const isAdmin = await this.userService.isAdmin(admin);
@@ -70,7 +71,7 @@ class MessagesController {
     }
   };
 
-  public createMessage = async (req: Request, res: Response, next: NextFunction) => {
+  public createMessage = async (req: ReqWithUser, res: Response, next: NextFunction) => {
     try {
       const user = req.user._id;
       const isAdmin = await this.userService.isAdmin(user);

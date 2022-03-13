@@ -19,7 +19,11 @@ class MailService {
       text: message,
     });
 
-    logger.info(`Message sent: ${info.messageId}`);
+    if (info.messageId) {
+      logger.info(`Email sent to ${to} with message ID ${info.messageId}`);
+    } else {
+      logger.info(`Failed to send email to ${to}`);
+    }
   }
 }
 

@@ -5,6 +5,8 @@ import { UI_URL } from '@/config';
 import AuthService from '@services/auth.service';
 import UserService from '@/services/users.service';
 import MailService from '@/services/mail.service';
+import { ReqWithUser } from '@/interfaces/request.interface';
+import { JwtPayload } from 'jsonwebtoken';
 
 class AuthController {
   public authService = new AuthService();
@@ -28,7 +30,7 @@ class AuthController {
     try {
       const token = req.query.token as string;
       const decodedToken = this.authService.decodeToken(token);
-      const user = await this.userService.findUserById(decodedToken._id);
+      const user = await this.userService.findUserById((decodedToken as JwtPayload)._id);
       res.status(200).cookie('token', token, { httpOnly: true }).json({ data: user, message: 'login' });
     } catch (error) {
       next(error);
@@ -43,7 +45,7 @@ class AuthController {
     }
   };
 
-  public session = async (req: Request, res: Response, next: NextFunction) => {
+  public session = async (req: ReqWithUser, res: Response, next: NextFunction) => {
     try {
       const user = await this.userService.findUserById(req.user._id);
       res.status(200).json({ data: user, message: 'session' });
