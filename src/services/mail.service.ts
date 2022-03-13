@@ -13,17 +13,13 @@ class MailService {
   } as TransportOptions);
 
   public async send(to: string, subject: string, message: string): Promise<void> {
-    const info = await this.transporter.sendMail({
+    await this.transporter.sendMail({
       to: to,
       subject: subject,
       html: message,
     });
 
-    if (info.messageId) {
-      logger.info(`Email sent to ${to} with message ID ${info.messageId}`);
-    } else {
-      logger.info(`Failed to send email to ${to}`);
-    }
+    logger.info(`Email sent to ${to}`);
   }
 }
 
