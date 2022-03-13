@@ -18,7 +18,7 @@ class AuthController {
       const userData: CreateUserDto = req.body;
       const user: User = await this.userService.createUser(userData);
       const token = this.authService.createToken(user);
-      await this.mailService.send(user.email, 'Login Link', `${UI_URL}/login?token=${token}`);
+      await this.mailService.send(user.email, 'Login Link', `Click <a href="${UI_URL}/login?token=${token}">Here</a> to login`);
 
       res.status(201).json({ data: user, message: 'signup' });
     } catch (error) {

@@ -84,8 +84,13 @@ class MessagesController {
       let updatedThread: Thread = await this.messageService.createMessage(threadId, user, body);
       updatedThread = await this.messageService.setEmail(updatedThread, isAdmin);
 
+      const sender = await this.userService.findUserById(user);
       const recipient = await this.userService.findUserById(isAdmin ? thread.user : thread.admin);
-      this.mailService.send(recipient.email, 'New Message', `New message: ${UI_URL}/chat?id=${threadId}`);
+      this.mailService.send(
+        recipient.email,
+        'New Message',
+        `You have received a secure message from ${sender.email}, click <a href="${UI_URL}/chat?id=${threadId}">here</a> to view it.`,
+      );
 
       res.status(200).json({ data: updatedThread, message: 'thread' });
     } catch (error) {

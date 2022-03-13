@@ -16,7 +16,7 @@ class MailService {
     const info = await this.transporter.sendMail({
       to: to,
       subject: subject,
-      text: message,
+      html: message,
     });
 
     if (info.messageId) {
