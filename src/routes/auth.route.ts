@@ -17,6 +17,7 @@ class AuthRoute implements Routes {
     this.router.post(`${this.path}get-link`, validationMiddleware(CreateUserDto, 'body'), this.authController.getLink);
     this.router.get(`${this.path}login`, this.authController.logIn);
     this.router.get(`${this.path}session`, this.authController.session);
+    this.router.get(`${this.path}sign-out`, this.authController.logOut);
   }
 }
 

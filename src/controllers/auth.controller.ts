@@ -35,6 +35,14 @@ class AuthController {
     }
   };
 
+  public logOut = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      res.status(200).clearCookie('token').json({ message: 'logout' });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public session = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const user = await this.userService.findUserById(req.user as string);
