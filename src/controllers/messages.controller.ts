@@ -2,11 +2,14 @@ import { NextFunction, Request, Response } from 'express';
 import { Thread } from '@interfaces/threads.interface';
 import userService from '@services/users.service';
 import messageService from '@services/messages.service';
+import mailService from '@services/mail.service';
 import { HttpException } from '@/exceptions/HttpException';
+import { UI_URL } from '@/config';
 
 class MessagesController {
   public userService = new userService();
   public messageService = new messageService();
+  public mailService = new mailService();
 
   public getThreads = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -33,6 +36,7 @@ class MessagesController {
 
       if (thread.admin != user && thread.user != user) throw new HttpException(401, 'Not your conversation.');
 
+      thread = await this.messageService.setMessagesSeen(threadId, user);
       thread = await this.messageService.setEmail(thread, isAdmin);
 
       res.status(200).json({ data: thread, message: 'thread' });
@@ -73,12 +77,14 @@ class MessagesController {
       const threadId: string = req.params.id;
       const body = req.body.body;
       const thread: Thread = await this.messageService.findThreadById(threadId);
-      console.log(user, thread);
 
       if (thread.admin != user && thread.user != user) throw new HttpException(401, 'Not your conversation.');
 
       let updatedThread: Thread = await this.messageService.createMessage(threadId, user, body);
       updatedThread = await this.messageService.setEmail(updatedThread, isAdmin);
+
+      const recipient = await this.userService.findUserById(isAdmin ? thread.user : thread.admin);
+      this.mailService.send(recipient.email, 'New Message', `New message: ${UI_URL}/chat?id=${threadId}`);
 
       res.status(200).json({ data: updatedThread, message: 'thread' });
     } catch (error) {

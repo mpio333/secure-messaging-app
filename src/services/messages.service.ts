@@ -56,6 +56,13 @@ class MessageService {
 
     return thread;
   }
+
+  public async setMessagesSeen(threadId: string, user: string): Promise<Thread> {
+    const thread = await this.threads.findById(threadId, projection);
+    thread.messages.forEach(message => (message.author != user ? (message.seen = true) : null));
+
+    return thread.save();
+  }
 }
 
 export default MessageService;

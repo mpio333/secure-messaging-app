@@ -45,7 +45,7 @@ class AuthController {
 
   public session = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const user = await this.userService.findUserById(req.user as string);
+      const user = await this.userService.findUserById(req.user._id);
       res.status(200).json({ data: user, message: 'session' });
     } catch (error) {
       next(error);
