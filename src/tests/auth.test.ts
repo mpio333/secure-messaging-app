@@ -52,7 +52,6 @@ describe('Testing Auth', () => {
         .send(userData)
         .expect('Set-Cookie', /^token=; /);
       expect(res.status).toBe(200);
-      console.log(res);
     });
   });
 });
